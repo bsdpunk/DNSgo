@@ -2,25 +2,26 @@
 "HostRecords":[
     {
         "HostName": "localhost",
-        "Address4": "127.0.0.1",
+        "Address4": ["127.0.0.1", "0.0.0.0"],
         "Id": 0,
         "DNSType": "A"
     },
 {
         "HostName": "mail.localhost",
-        "Address4": "127.0.0.1",
+        "Address4": ["127.0.0.1", "0.0.0.0"],
         "Id": 0,
         "DNSType": "A"
     },
 {
         "HostName": "mail.localhost",
-        "Address4": "127.0.0.1",
+        "Address4": ["127.0.0.1", "0.0.0.0"],
+
         "Id": 0,
         "DNSType": "MX"
     },
     {
 "HostName": "awkward",
-        "Address4": "127.0.0.1",
+        "Address4": ["127.0.0.1", "0.0.0.0"],
         "Id": 1,
         "DNSType": "A"
 }
