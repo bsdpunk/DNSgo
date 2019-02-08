@@ -1,0 +1,27 @@
+{
+"HostRecords":[
+    {
+        "HostName": "localhost",
+        "Address4": "127.0.0.1",
+        "Id": 0,
+        "DNSType": "A"
+    },
+{
+        "HostName": "mail.localhost",
+        "Address4": "127.0.0.1",
+        "Id": 0,
+        "DNSType": "A"
+    },
+{
+        "HostName": "mail.localhost",
+        "Address4": "127.0.0.1",
+        "Id": 0,
+        "DNSType": "MX"
+    },
+    {
+"HostName": "awkward",
+        "Address4": "127.0.0.1",
+        "Id": 1,
+        "DNSType": "A"
+}
+]}
