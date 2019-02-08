@@ -41,8 +41,9 @@ const (
 func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 	//	var rType dnsmessage.Type
 	var rBody dnsmessage.ResourceBody
-	var r []dnsmessage.Resource
-	var ip net.IP
+	var r []dnsmessage.Resource = nil
+	var ip net.IP = nil
+	var it []net.IP = nil
 	fmt.Println(q.Name)
 	sName := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
 	rType := q.Type
@@ -54,30 +55,12 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 	id := mapNameId[hoster]
 	//	if (id =! nil) {
 	if (id == 0 && sName == "localhost") || id > 0 {
-		r = make([]dnsmessage.Resource, 1)
+		r = make([]dnsmessage.Resource, len(ghosts.HostRecords[id].IP4))
 		fmt.Println(id)
-		ip = ghosts.HostRecords[id].IP4
-		fmt.Println(ip)
-		rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
-		r[0] = dnsmessage.Resource{
-			Header: dnsmessage.ResourceHeader{
-				Name:  q.Name,
-				Type:  rType,
-				Class: q.Class,
-				TTL:   300,
-			},
-			Body: rBody,
-		}
-		//	} else {
-		return r
-	} else {
-		it, _ := net.LookupHost(sName)
-		fmt.Println(it)
-		r = make([]dnsmessage.Resource, len(it))
-		//ip := ghosts.HostRecords[id].IP4
-
+		it = ghosts.HostRecords[id].getIP4()
 		for n := range it {
-			ip = net.ParseIP(it[n])
+			ip = it[n]
+			fmt.Println(ip)
 			rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
 			r[n] = dnsmessage.Resource{
 				Header: dnsmessage.ResourceHeader{
@@ -88,8 +71,36 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 				},
 				Body: rBody,
 			}
-			//}	}}
 		}
+		return r
+		//	} else {
+	} else {
+		it, _ := net.LookupHost(sName)
+		fmt.Println(it)
+
+		r = make([]dnsmessage.Resource, len(it))
+		//ip := ghosts.HostRecords[id].IP4
+
+		for n := range it {
+			fmt.Println(it[n])
+			ip = net.ParseIP(it[n]).To16()
+			fmt.Println(ip)
+			if ip.To4() == nil {
+				rBody = &dnsmessage.AAAAResource{AAAA: [16]byte{ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]}}
+			} else {
+				rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
+			}
+			r[n] = dnsmessage.Resource{
+				Header: dnsmessage.ResourceHeader{
+					Name:  q.Name,
+					Type:  rType,
+					Class: q.Class,
+					TTL:   300,
+				},
+				Body: rBody,
+			}
+		}
+		//}	}}
 		return r
 	}
 }
@@ -190,22 +201,22 @@ type HostRecords struct {
 }
 
 type HostRecord struct {
-	HostName string `json:"HostName"`
-	IP4      net.IP `json:"Address4"`
-	IP6      net.IP `json:"Address6"`
-	Id       int    `json:"Id"`
-	DNSType  string `json:"DNSType"` //We only need the name and XP of the monsters, however other critical stats are included for future expansion
+	HostName string   `json:"HostName"`
+	IP4      []net.IP `json:"Address4"`
+	IP6      []net.IP `json:"Address6"`
+	Id       int      `json:"Id"`
+	DNSType  string   `json:"DNSType"` //We only need the name and XP of the monsters, however other critical stats are included for future expansion
 }
 type nameKey struct {
 	DNSType  string `json:"DNSType"` //We only need the name and XP of the monsters, however other critical stats are included for future expansion
 	HostName string `json:"HostName"`
 }
 
-func (h HostRecord) getIP4() net.IP {
+func (h HostRecord) getIP4() []net.IP {
 	return h.IP4
 }
 
-func (h HostRecord) getIP6() net.IP {
+func (h HostRecord) getIP6() []net.IP {
 	return h.IP6
 }
 
