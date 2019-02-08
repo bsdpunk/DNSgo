@@ -12,12 +12,24 @@
         "Id": 0,
         "DNSType": "A"
     },
-{
-        "HostName": "mail.localhost",
-        "Address4": ["127.0.0.1", "0.0.0.0"],
 
-        "Id": 0,
-        "DNSType": "MX"
+    {
+        "HostName": "mail.shit",
+       "Address4": ["127.0.0.1", "10.0.0.2", "10.0.0.3", "1.1.1.1"],
+         "MailNames": ["mail","notmail", "another","one"],
+        "Id": 18,
+       "DNSType": "MX",
+       "Priority": [10,15,20,30]
+    },
+
+    
+    {
+        "HostName": "mail.localhost",
+       "Address4": ["127.0.0.1", "10.0.0.2", "10.0.0.3", "1.1.1.1"],
+         "MailNames": ["mail","notmail", "another","one"],
+        "Id": 18,
+       "DNSType": "MX",
+       "Priority": [10,15,20,30]
     },
     {
 "HostName": "awkward",
