@@ -132,7 +132,7 @@ func buildMX(q dnsmessage.Question) []dnsmessage.Resource {
 			fmt.Println(it[n])
 			mxName, _ := dnsmessage.NewName(it[n].Host)
 			numeral := it[n].Pref
-			rBody = &dnsmessage.MXResource{Pref: numeral, MX: q.Name}
+			rBody = &dnsmessage.MXResource{Pref: numeral, MX: mxName}
 			fmt.Println(mxName)
 			fmt.Println(mxName)
 			fmt.Println(mxName)
@@ -143,7 +143,7 @@ func buildMX(q dnsmessage.Question) []dnsmessage.Resource {
 			fmt.Println(mxName)
 			r[n] = dnsmessage.Resource{
 				Header: dnsmessage.ResourceHeader{
-					Name:  mxName,
+					Name:  q.Name,
 					Type:  dnsmessage.TypeMX,
 					Class: q.Class,
 					TTL:   300,
@@ -182,10 +182,10 @@ func buildNS(q dnsmessage.Question) []dnsmessage.Resource {
 		for n := range it {
 			fmt.Println(it[n])
 			nsName, _ := dnsmessage.NewName(it[n].Host)
-			rBody = &dnsmessage.NSResource{NS: q.Name}
+			rBody = &dnsmessage.NSResource{NS: nsName}
 			r[n] = dnsmessage.Resource{
 				Header: dnsmessage.ResourceHeader{
-					Name:  nsName,
+					Name:  q.Name,
 					Type:  dnsmessage.TypeMX,
 					Class: q.Class,
 					TTL:   300,
@@ -238,15 +238,19 @@ func (s *DNSService) Listen() {
 			if len(m.Questions) == 0 {
 				continue
 			}
+			fmt.Println("------------------------------------------------------------")
 			fmt.Println(m.Header.GoString())
 			fmt.Println(m.Questions[0].GoString())
 			fmt.Println(m.Questions[0].Type.GoString())
 			fmt.Println(m.Questions[0].Type)
+			fmt.Println(m.Questions[0].Name.GoString())
+			fmt.Println(m.Header)
+			fmt.Println(m.Authorities)
+			fmt.Println(m.Additionals[0])
 			fmt.Println(m)
 			fmt.Println(m)
-			fmt.Println(m)
-			fmt.Println(m)
-			fmt.Println(m)
+			fmt.Println("------------------------------------------------------------")
+
 			for i := range m.Questions {
 				q := m.Questions[i]
 				fmt.Println(len(m.Questions))
@@ -280,6 +284,16 @@ func (s *DNSService) Listen() {
 						newMX.Answers = append(newMX.Answers, resource[x])
 					}
 					fmt.Println(newMX)
+					fmt.Println("------------------------------------------------------------")
+					fmt.Println(newMX.Header.GoString())
+					fmt.Println(newMX.Answers[0].GoString())
+					fmt.Println(newMX.Answers[1].GoString())
+					fmt.Println(newMX.Answers)
+					fmt.Println(newMX.Header)
+					fmt.Println(newMX.Authorities)
+					fmt.Println(newMX.Additionals)
+					fmt.Println("------------------------------------------------------------")
+
 					packed, _ := newMX.Pack()
 					fmt.Println(packed)
 					var p dnsmessage.Parser
