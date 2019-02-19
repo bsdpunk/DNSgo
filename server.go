@@ -118,10 +118,10 @@ func buildMX(q dnsmessage.Question) []dnsmessage.Resource {
 			var numeral uint16 = ghosts.HostRecords[id].Priority[g]
 			fmt.Println(g)
 
-			fmt.Println(ghosts.HostRecords[id].IP4[g])
-			fmt.Println(ghosts.HostRecords[id].MailNames[g])
-			fmt.Println(ghosts.HostRecords[id].Priority[g])
-			fmt.Println(g)
+			//fmt.Println(ghosts.HostRecords[id].IP4[g])
+			//fmt.Println(ghosts.HostRecords[id].MailNames[g])
+			//fmt.Println(ghosts.HostRecords[id].Priority[g])
+			//fmt.Println(g)
 
 			rBody = &dnsmessage.MXResource{Pref: numeral, MX: mxName}
 			r[g] = dnsmessage.Resource{
@@ -136,7 +136,7 @@ func buildMX(q dnsmessage.Question) []dnsmessage.Resource {
 			fmt.Println(g)
 
 		}
-		fmt.Println("----------------------------------------------")
+		//fmt.Println("----------------------------------------------")
 		return r
 	} else {
 		var it, _ = net.LookupMX(string(q.Name.Data[:q.Name.Length]))
@@ -328,7 +328,7 @@ func (s *DNSService) Listen() {
 				switch q.Type {
 				case dnsmessage.TypeA:
 					resource := buildAns(q)
-					theParse(buffer)
+					//theParse(buffer)
 					//ans, _ := toHeader("localhost.", "TypeA") //rType := dnsmessage.TypeA
 					newM.Header = m.Header
 					//newM.Answers[0].Header = dnsmessage.ResourceHeader{Name: q.Name, Type: dnsmessage.TypeA, Class: q.Class, TTL: 1, Length: 1024}
@@ -341,32 +341,32 @@ func (s *DNSService) Listen() {
 				case dnsmessage.TypeMX:
 
 					resource := buildMX(q)
-					theParse(buffer)
+					//theParse(buffer)
 					newMX.Header = m.Header
 					//p = dnsmessage.Parser
 					for x := range resource {
 						newMX.Answers = append(newMX.Answers, resource[x])
 					}
-					fmt.Println(newMX)
-					fmt.Println(newMX.Answers)
-					fmt.Println(newMX.Answers)
+					//			fmt.Println(newMX)
+					//			fmt.Println(newMX.Answers)
+					//			fmt.Println(newMX.Answers)
 
-					fmt.Println(q.Name)
-					fmt.Println(newMX.Answers)
+					//			fmt.Println(q.Name)
+					//			fmt.Println(newMX.Answers)
 
-					fmt.Println(q.Name.GoString())
-					fmt.Println(q.GoString())
-					fmt.Println(q.Type.GoString())
-					fmt.Println(q.Class.GoString())
-					fmt.Println(q.Type.GoString())
-					fmt.Println(q.Class.GoString())
-					fmt.Println("--------------------------------------")
+					//			fmt.Println(q.Name.GoString())
+					//			fmt.Println(q.GoString())
+					//			fmt.Println(q.Type.GoString())
+					//			fmt.Println(q.Class.GoString())
+					//			fmt.Println(q.Type.GoString())
+					//			fmt.Println(q.Class.GoString())
+					//			fmt.Println("--------------------------------------")
 					packed, _ := newMX.Pack()
 					_, err = s.conn.WriteToUDP(packed, addr)
 
 				case dnsmessage.TypeNS:
 					resource := buildNS(q)
-					theParse(buffer)
+					//theParse(buffer)
 					newM.Header = m.Header
 					for x := range resource {
 						newM.Answers = append(newM.Answers, resource[x])
@@ -376,16 +376,16 @@ func (s *DNSService) Listen() {
 
 				case dnsmessage.TypePTR:
 					msg := buildPTR(q)
-					theParse(buffer)
+					//theParse(buffer)
 					newM.Header = m.Header
 					for x := range msg {
 						newM.Answers = append(newM.Answers, msg[x])
 					}
 
-					fmt.Println(m.GoString())
-					fmt.Println(newM.GoString())
-					fmt.Println(newM.Answers)
-					fmt.Println(msg)
+					//			fmt.Println(m.GoString())
+					///			fmt.Println(newM.GoString())
+					//			fmt.Println(newM.Answers)
+					//			fmt.Println(msg)
 					packed, _ := newM.Pack()
 					_, err = s.conn.WriteToUDP(packed, addr)
 					if err != nil {
