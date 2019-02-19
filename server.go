@@ -205,7 +205,7 @@ func buildNS(q dnsmessage.Question) []dnsmessage.Resource {
 	return r
 }
 
-func buildPTR(q dnsmessage.Question) dnsmessage.Message {
+func buildPTR(q dnsmessage.Question) []dnsmessage.Resource {
 	sAddr := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
 	sName := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
 	hoster := nameKey{"NS", sName}
@@ -215,6 +215,7 @@ func buildPTR(q dnsmessage.Question) dnsmessage.Message {
 
 	fmt.Println(q)
 	//fmt.Println(it)
+	var r []dnsmessage.Resource = nil
 	if (id == 0 && sAddr == "127.0.0.1") || id > 0 {
 		fmt.Println("Do nothing")
 	} else {
@@ -226,7 +227,7 @@ func buildPTR(q dnsmessage.Question) dnsmessage.Message {
 		//fmt.Println(it[n])
 		//var dot dnsmessage.Name
 		//dot, _ = dnsmessage.NewName(".")
-		ptrName, _ := dnsmessage.NewName("a")
+		ptrName := q.Name
 		//rBody = &dnsmessage.PTRResource{PTR: dot}
 
 		//r = make([]dnsmessage.Resource, 1)
@@ -265,9 +266,9 @@ func buildPTR(q dnsmessage.Question) dnsmessage.Message {
 			},
 		}
 
-		return msg
+		return msg.Answers
 	}
-	return dnsmessage.Message{}
+	return r
 }
 
 func toHeader(name string, sType string) (h dnsmessage.ResourceHeader, err error) {
@@ -289,6 +290,9 @@ func (s *DNSService) Listen() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var count int64
+	count = 0
 	defer s.conn.Close()
 	for {
 		//		_, addr, err := s.conn.ReadFromUDP(buf)
@@ -308,16 +312,17 @@ func (s *DNSService) Listen() {
 		if len(m.Questions) == 0 {
 			continue
 		}
-		fmt.Println(addr)
+		//fmt.Println(addr)
 		for i := range m.Questions {
 			q := m.Questions[i]
 			var wg sync.WaitGroup
 			wg.Add(len(m.Questions))
 			go func(q dnsmessage.Question) {
 				//data := []byte(buffer[0:n])
-
+				count++
 				defer wg.Done()
-				fmt.Println(len(m.Questions))
+				fmt.Println(count)
+				//	fmt.Println(len(m.Questions))
 				var newMX dnsmessage.Message
 				var newM dnsmessage.Message
 				switch q.Type {
@@ -372,12 +377,16 @@ func (s *DNSService) Listen() {
 				case dnsmessage.TypePTR:
 					msg := buildPTR(q)
 					theParse(buffer)
+					newM.Header = m.Header
+					for x := range msg {
+						newM.Answers = append(newM.Answers, msg[x])
+					}
 
 					fmt.Println(m.GoString())
 					fmt.Println(newM.GoString())
 					fmt.Println(newM.Answers)
 					fmt.Println(msg)
-					packed, _ := msg.Pack()
+					packed, _ := newM.Pack()
 					_, err = s.conn.WriteToUDP(packed, addr)
 					if err != nil {
 						fmt.Println(err)
