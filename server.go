@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	//"strconv"
 )
 
@@ -45,7 +44,6 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 	var r []dnsmessage.Resource = nil
 	var ip net.IP = nil
 	var it []net.IP = nil
-
 	sName := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
 	rType := dnsmessage.TypeA
 	hoster := nameKey{"A", sName}
@@ -205,6 +203,7 @@ func buildNS(q dnsmessage.Question) []dnsmessage.Resource {
 	return r
 }
 
+<<<<<<< HEAD
 func buildPTR(q dnsmessage.Question) []dnsmessage.Resource {
 	sAddr := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
 	sName := strings.TrimRight(string(q.Name.Data[:q.Name.Length]), ".")
@@ -271,6 +270,8 @@ func buildPTR(q dnsmessage.Question) []dnsmessage.Resource {
 	return r
 }
 
+=======
+>>>>>>> parent of e89f421... GoRoutine
 func toHeader(name string, sType string) (h dnsmessage.ResourceHeader, err error) {
 	h.Name, err = dnsmessage.NewName("localhost.")
 	if err != nil {
@@ -297,7 +298,7 @@ func (s *DNSService) Listen() {
 	for {
 		//		_, addr, err := s.conn.ReadFromUDP(buf)
 		var m dnsmessage.Message
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 512)
 
 		_, addr, err := s.conn.ReadFromUDP(buffer)
 		if err != nil {
@@ -312,6 +313,7 @@ func (s *DNSService) Listen() {
 		if len(m.Questions) == 0 {
 			continue
 		}
+<<<<<<< HEAD
 		//fmt.Println(addr)
 		for i := range m.Questions {
 			q := m.Questions[i]
@@ -395,9 +397,65 @@ func (s *DNSService) Listen() {
 
 				default:
 					break
-				}
+=======
 
-			}(q)
+		for i := range m.Questions {
+			q := m.Questions[i]
+			//data := []byte(buffer[0:n])
+			fmt.Println(len(m.Questions))
+			var newMX dnsmessage.Message
+			var newM dnsmessage.Message
+			switch q.Type {
+			case dnsmessage.TypeA:
+				resource := buildAns(q)
+				//ans, _ := toHeader("localhost.", "TypeA") //rType := dnsmessage.TypeA
+				newM.Header = m.Header
+				//newM.Answers[0].Header = dnsmessage.ResourceHeader{Name: q.Name, Type: dnsmessage.TypeA, Class: q.Class, TTL: 1, Length: 1024}
+				for x := range resource {
+					newM.Answers = append(newM.Answers, resource[x])
+>>>>>>> parent of e89f421... GoRoutine
+				}
+				packed, _ := newM.Pack()
+				_, err = s.conn.WriteToUDP(packed, addr)
+
+			case dnsmessage.TypeMX:
+
+				resource := buildMX(q)
+				newMX.Header = m.Header
+				//p = dnsmessage.Parser
+				for x := range resource {
+					newMX.Answers = append(newMX.Answers, resource[x])
+				}
+				fmt.Println(newMX)
+				fmt.Println(newMX.Answers)
+				fmt.Println(newMX.Answers[0])
+
+				fmt.Println(q.Name)
+				fmt.Println(newMX.Answers)
+				fmt.Println(newMX.Answers[0].GoString())
+
+				fmt.Println(q.Name.GoString())
+				fmt.Println(q.Type.GoString())
+				fmt.Println(q.Class.GoString())
+				fmt.Println(q.Type.GoString())
+				fmt.Println(q.Class.GoString())
+				fmt.Println("--------------------------------------")
+				packed, _ := newMX.Pack()
+				_, err = s.conn.WriteToUDP(packed, addr)
+
+			case dnsmessage.TypeNS:
+				resource := buildNS(q)
+				newM.Header = m.Header
+				for x := range resource {
+					newM.Answers = append(newM.Answers, resource[x])
+				}
+				packed, _ := newM.Pack()
+				_, err = s.conn.WriteToUDP(packed, addr)
+
+			default:
+				break
+			}
+
 		}
 		if err != nil {
 			fmt.Println(err)
@@ -407,113 +465,7 @@ func (s *DNSService) Listen() {
 	}
 }
 
-// Query lookup answers for DNS Amessage.
-
-func theParse(buf []byte) {
-
-	//	var p dnsmessage.Parser
-	//	if _, err := p.Start(m.Unpack()); err != nil {
-	//		panic(err)
-	//	}
-
-	wantName := "localhost."
-
-	var m dnsmessage.Message //buf := make([]byte, 2, 514)
-	var err error = m.Unpack(buf)
-	if err != nil {
-		panic(err)
-	}
-	var p dnsmessage.Parser
-	if _, err := p.Start(buf); err != nil {
-		panic(err)
-	}
-	for {
-		q, err := p.Question()
-		if err == dnsmessage.ErrSectionDone {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-
-		//		if q.Name.String() != "localhost" {
-		//			continue
-		//		}
-
-		////		fmt.Println("Found question for name", "localhost")
-		//		if err := p.SkipAllQuestions(); err != nil {
-		//			panic(err)
-		//}
-		fmt.Println(q.GoString())
-		fmt.Println(q.GoString())
-		fmt.Println(q.GoString())
-		fmt.Println(q.GoString())
-		fmt.Println(q.GoString())
-		fmt.Println(q.GoString())
-
-		break
-
-	}
-
-	q, err := p.Question()
-
-	var gotIPs []net.IP
-	var mail []dnsmessage.MXResource
-	var pref []dnsmessage.PTRResource
-	//	h, err := p.AnswerHeader()
-	//	if err == dnsmessage.ErrSectionDone {
-	//		break
-	//	}
-	//	if err != nil {
-	//		panic(err)
-	//	}
-
-	//	if (h.Type != dnsmessage.TypeA && h.Type != dnsmessage.TypeAAAA) || h.Class != dnsmessage.ClassINET {
-	//		continue
-	//	}
-	//
-	//		if !strings.EqualFold(h.Name.String(), wantName) {
-	//			if err := p.SkipAnswer(); err != nil {
-	//				panic(err)
-	//			}
-	//			continue
-	//		}
-
-	switch q.Type {
-	case dnsmessage.TypeA:
-		r, err := p.AResource()
-		if err != nil {
-			panic(err)
-		}
-		gotIPs = append(gotIPs, r.A[:])
-	case dnsmessage.TypeAAAA:
-		r, err := p.AAAAResource()
-		if err != nil {
-			panic(err)
-		}
-		gotIPs = append(gotIPs, r.AAAA[:])
-
-	case dnsmessage.TypeMX:
-		r, err := p.MXResource()
-		if err != nil {
-			panic(err)
-		}
-		mail = append(mail, r)
-	case dnsmessage.TypePTR:
-		r, err := p.PTRResource()
-		if err != nil {
-			panic(err)
-		}
-		pref = append(pref, r)
-
-	default:
-		break
-	}
-
-	fmt.Printf("Found A/AAAA records for name %s: %v\n", wantName, gotIPs)
-	fmt.Println(mail)
-	fmt.Println(pref)
-}
+// Query lookup answers for DNS message.
 
 ////
 ///
