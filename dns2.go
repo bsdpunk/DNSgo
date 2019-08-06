@@ -39,7 +39,6 @@ const (
 )
 
 func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
-	//	var rType dnsmessage.Type
 	var rBody dnsmessage.ResourceBody
 	var r []dnsmessage.Resource = nil
 	var ip net.IP = nil
@@ -49,7 +48,6 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 	rType := dnsmessage.TypeA
 	hoster := nameKey{"A", sName}
 	id := mapNameId[hoster]
-	//	if (id =! nil) {
 	if (id == 0 && sName == "localhost") || id > 0 {
 		it = ghosts.HostRecords[id].getIP4()
 		r = make([]dnsmessage.Resource, len(it))
@@ -68,13 +66,11 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 			fmt.Println(r[n], "NEW")
 
 		}
-		//	} else
 		return r
 	} else {
 		it, _ := net.LookupHost(sName)
 
 		r = make([]dnsmessage.Resource, len(it))
-		//ip := ghosts.HostRecords[id].IP4
 
 		for n := range it {
 			ip = net.ParseIP(it[n]).To16()
@@ -82,15 +78,17 @@ func buildAns(q dnsmessage.Question) []dnsmessage.Resource {
 				rBody = &dnsmessage.AAAAResource{AAAA: [16]byte{ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]}}
 			} else {
 				rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
-			}
-			r[n] = dnsmessage.Resource{
-				Header: dnsmessage.ResourceHeader{
-					Name:  q.Name,
-					Type:  rType,
-					Class: q.Class,
-					TTL:   300,
-				},
-				Body: rBody,
+
+				r[n] = dnsmessage.Resource{
+					Header: dnsmessage.ResourceHeader{
+						Name:  q.Name,
+						Type:  rType,
+						Class: q.Class,
+						TTL:   300,
+					},
+					Body: rBody,
+				}
+				fmt.Println(r[n], "NEW")
 			}
 		}
 		return r
@@ -327,26 +325,23 @@ func (s *DNSService) Listen() {
 				var newM dnsmessage.Message
 				switch q.Type {
 				case dnsmessage.TypeA:
-
 					resource := buildAns(q)
+					//theParse(buffer)
 					//ans, _ := toHeader("localhost.", "TypeA") //rType := dnsmessage.TypeA
-					//data := []byte(buffer[0:n])
 					newM.Header = m.Header
 					//newM.Answers[0].Header = dnsmessage.ResourceHeader{Name: q.Name, Type: dnsmessage.TypeA, Class: q.Class, TTL: 1, Length: 1024}
 					for x := range resource {
 						newM.Answers = append(newM.Answers, resource[x])
+
+						fmt.Println(newM, "ANSWERS")
 					}
 					packed, _ := newM.Pack()
+					fmt.Println(packed, "PACKED")
 					_, err = s.conn.WriteToUDP(packed, addr)
 
-					ip := []net.IP
-					if ip == nil {
-						return none, errIPInvalid
-					}
-					rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
-				case dnsmessage.TypeMX:
-
-					resource := buildMX(q)
+					//				case dnsmessage.TypeMX:
+					//
+					//	resource := buildMX(q)
 					//theParse(buffer)
 					newMX.Header = m.Header
 					//p = dnsmessage.Parser
@@ -367,7 +362,8 @@ func (s *DNSService) Listen() {
 					//			fmt.Println(q.Type.GoString())
 					//			fmt.Println(q.Class.GoString())
 					//			fmt.Println("--------------------------------------")
-					packed, _ := newMX.Pack()
+					//packed, _ := newMX.Pack()
+
 					_, err = s.conn.WriteToUDP(packed, addr)
 
 				case dnsmessage.TypeNS:
